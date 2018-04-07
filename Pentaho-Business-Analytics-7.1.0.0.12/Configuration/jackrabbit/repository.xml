@@ -1,0 +1,175 @@
+<?xml version="1.0"?>
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+<!DOCTYPE Repository
+    PUBLIC "-//The Apache Software Foundation//DTD Jackrabbit 2.0//EN"
+    "http://jackrabbit.apache.org/dtd/repository-2.0.dtd">
+
+<Repository>
+
+  <FileSystem class="org.apache.jackrabbit.core.fs.db.OracleFileSystem">
+    <param name="url" value="jdbc:oracle:thin:@server:1521:dbschema" />
+    <param name="user" value="dbuserprex_ra"/>
+    <param name="password" value="dbuserra.bji4"/>
+    <param name="schemaObjectPrefix" value="fs_repos_"/>
+    <param name="tablespace" value="TESTU"/>
+  </FileSystem>
+
+  <DataStore class="org.apache.jackrabbit.core.data.db.DbDataStore">
+    <param name="driver" value="oracle.jdbc.OracleDriver"/>
+    <param name="url" value="jdbc:oracle:thin:@server:1521:dbschema" />
+    <param name="user" value="dbuserprex_ra"/>
+    <param name="password" value="dbuserra.bji4"/>
+    <param name="databaseType" value="oracle"/>
+    <param name="minRecordLength" value="1024"/>
+    <param name="maxConnections" value="3"/>
+    <param name="copyWhenReading" value="true"/>
+    <param name="tablePrefix" value=""/>
+    <param name="schemaObjectPrefix" value="ds_repos_"/>
+  </DataStore>
+
+  <Security appName="Jackrabbit">
+    <!--
+        security manager:
+        class: FQN of class implementing the JackrabbitSecurityManager interface
+    -->
+    <SecurityManager class="org.apache.jackrabbit.core.DefaultSecurityManager" workspaceName="security">
+      <!--
+      workspace access:
+      class: FQN of class implementing the WorkspaceAccessManager interface
+      -->
+      <!-- <WorkspaceAccessManager class="..."/> -->
+      <!-- <param name="config" value="${rep.home}/security.xml"/> -->
+    </SecurityManager>
+
+    <!--
+        access manager:
+        class: FQN of class implementing the AccessManager interface
+    -->
+    <AccessManager class="org.apache.jackrabbit.core.security.DefaultAccessManager">
+      <!-- <param name="config" value="${rep.home}/access.xml"/> -->
+    </AccessManager>
+
+    <LoginModule class="org.pentaho.platform.repository2.unified.jcr.jackrabbit.security.SpringSecurityLoginModule">
+      <!--
+        anonymous user name ('anonymous' is the default value)
+      -->
+      <param name="anonymousId" value="anonymous"/>
+      <!--
+        administrator user id (default value if param is missing is 'admin')
+      -->
+      <param name="adminId" value="pentahoRepoAdmin"/>
+
+      <param name="principalProvider"
+             value="org.pentaho.platform.repository2.unified.jcr.jackrabbit.security.SpringSecurityPrincipalProvider"/>
+      <!-- comma separated list of pre-authentication tokens, one per application -->
+      <param name="preAuthenticationTokens" value="ZchBOvP8q9FQ"/>
+      <!-- must match PentahoSessionCredentialsStrategy.ATTR_PRE_AUTHENTICATION_TOKEN -->
+      <param name="trust_credentials_attribute" value="pre_authentication_token"/>
+    </LoginModule>
+  </Security>
+
+  <!--
+      location of workspaces root directory and name of default workspace
+  -->
+  <Workspaces rootPath="${rep.home}/workspaces" defaultWorkspace="default"/>
+  <!--
+      workspace configuration template:
+      used to create the initial workspace if there's no workspace yet
+  -->
+  <Workspace name="${wsp.name}">
+
+
+    <FileSystem class="org.apache.jackrabbit.core.fs.db.OracleFileSystem">
+      <param name="url" value="jdbc:oracle:thin:@server:1521:dbschema" />
+      <param name="user" value="dbuserprex_ra"/>
+      <param name="password" value="dbuserra.bji4"/>
+      <param name="schemaObjectPrefix" value="fs_ws_"/>
+      <param name="tablespace" value="TESTU"/>
+    </FileSystem>
+
+
+    <PersistenceManager class="org.apache.jackrabbit.core.persistence.bundle.OraclePersistenceManager">
+      <param name="driver" value="oracle.jdbc.OracleDriver"/>
+      <param name="url" value="jdbc:oracle:thin:@server:1521:dbschema" />
+      <param name="user" value="dbuserprex_ra"/>
+      <param name="password" value="dbuserra.bji4"/>
+      <param name="schema" value="oracle"/>
+      <param name="schemaObjectPrefix" value="${wsp.name}_pm_ws_"/>
+      <param name="tablespace" value="TESTU"/>
+    </PersistenceManager>
+
+
+    <WorkspaceSecurity>
+      <AccessControlProvider class="org.apache.jackrabbit.core.security.authorization.acl.PentahoACLProvider">
+        <!-- Param names have the prefix magicAceDefinition along with a consecutive integer -->
+        <!-- Param values have four values separated by colons. -->
+        <!-- Param value subitem #1: path possibly including {0} which will be replaced by tenantId -->
+        <!-- Param value subitem #2: ABS action name -->
+        <!-- Param value subitem #3: comma-separated list of JCR privileges -->
+        <!-- Param value subitem #4: boolean where true means that path is a prefix and not to be matched exactly -->
+        <param name="magicAceDefinition0" value="{0};org.pentaho.security.administerSecurity;jcr:all;true;true;false" />
+        <param name="magicAceDefinition1" value="{0};org.pentaho.repository.read;jcr:read,jcr:readAccessControl;true;false;true" />
+        <param name="magicAceDefinition2" value="{0}/etc/pdi;org.pentaho.repository.read;jcr:read,jcr:readAccessControl;true;false;false" />
+        <param name="magicAceDefinition3" value="{0}/etc/pdi;org.pentaho.repository.create;jcr:read,jcr:readAccessControl,jcr:write,jcr:modifyAccessControl,jcr:lockManagement,jcr:versionManagement,jcr:nodeTypeManagement;true;false;false" />
+        <param name="magicAceDefinition4" value="{0}/etc;org.pentaho.security.publish;jcr:read,jcr:readAccessControl,jcr:write,jcr:modifyAccessControl,jcr:lockManagement,jcr:versionManagement,jcr:nodeTypeManagement;true;true;false" />
+        <param name="magicAceDefinition5" value="{0}/etc/pdi/databases;org.pentaho.platform.dataaccess.datasource.security.manage;jcr:read,jcr:readAccessControl,jcr:write,jcr:modifyAccessControl,jcr:lockManagement,jcr:versionManagement,jcr:nodeTypeManagement;true;true;true" />
+      </AccessControlProvider>
+    </WorkspaceSecurity>
+
+  </Workspace>
+
+  <!--
+      Configures the versioning
+  -->
+  <Versioning rootPath="${rep.home}/version">
+
+    <FileSystem class="org.apache.jackrabbit.core.fs.db.OracleFileSystem">
+      <param name="url" value="jdbc:oracle:thin:@server:1521:dbschema" />
+      <param name="user" value="dbuserprex_ra"/>
+      <param name="password" value="dbuserra.bji4"/>
+      <param name="schemaObjectPrefix" value="fs_ver_"/>
+      <param name="tablespace" value="TESTU"/>
+    </FileSystem>
+
+    <PersistenceManager class="org.apache.jackrabbit.core.persistence.bundle.OraclePersistenceManager">
+      <param name="driver" value="oracle.jdbc.OracleDriver"/>
+      <param name="url" value="jdbc:oracle:thin:@server:1521:dbschema" />
+      <param name="user" value="dbuserprex_ra"/>
+      <param name="password" value="dbuserra.bji4"/>
+      <param name="schema" value="oracle"/>
+      <param name="schemaObjectPrefix" value="pm_ver_"/>
+      <param name="tablespace" value="TESTU"/>
+    </PersistenceManager>
+
+
+  </Versioning>
+
+  <Cluster id="node_125" syncDelay="5">
+    <Journal class="org.apache.jackrabbit.core.journal.OracleDatabaseJournal">
+      <param name="revision" value="${rep.home}/revision.log"/>
+      <param name="driver" value="oracle.jdbc.OracleDriver"/>
+      <param name="url" value="jdbc:oracle:thin:@server:1521:dbschema" />
+      <param name="user" value="dbuserprex_ra"/>
+      <param name="password" value="dbuserra.bji4"/>
+      <param name="schema" value="oracle"/>
+      <param name="schemaObjectPrefix" value="cl_repos_"/>
+      <param name="tablespace" value="TESTU"/>
+    </Journal>
+  </Cluster>
+</Repository>
